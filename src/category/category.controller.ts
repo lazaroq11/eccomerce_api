@@ -1,7 +1,7 @@
 import { Controller, UseGuards, Body, Post, Request, Get, Delete, Patch } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { AuthGuard } from 'src/auth/auth.guard';
-import type { Category } from './dtos/Category';
+import type { Category } from './dtos/category';
 
 @Controller('category')
 export class CategoryController {

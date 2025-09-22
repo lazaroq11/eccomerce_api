@@ -50,7 +50,6 @@ export class AuthService {
         }
 
         const accessToken = await this.jwtService.sign({ id: user.id, role: user.role, });
-        console.log('Role do usuário:', user.role);
         return { token: accessToken }
     }
 }
