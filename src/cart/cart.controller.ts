@@ -1,6 +1,6 @@
 import { Controller, UseGuards, Get, Post, Delete, Patch, Request, Body, Param } from '@nestjs/common';
 import { CartService } from './cart.service';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('cart')
 export class CartController {

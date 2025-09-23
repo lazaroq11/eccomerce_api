@@ -1,6 +1,6 @@
 import { Controller, Get, Patch, Delete, Request, UseGuards, Body, ForbiddenException, Param } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthGuard } from '../auth/auth.guard';
 import type { UpdateUserDto } from './dtos/users';
 
 @Controller('users')
