@@ -2,7 +2,7 @@ import { createServer, proxy } from 'aws-serverless-express';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../src/app.module';
 import { ExpressAdapter } from '@nestjs/platform-express';
-import express from 'express'; // <- CORREÇÃO
+import express from 'express';
 
 const expressApp = express();
 
@@ -15,4 +15,6 @@ async function bootstrap() {
 bootstrap();
 
 const server = createServer(expressApp);
-export const handler = (req, res) => proxy(server, req, res);
+
+
+export default (req, res) => proxy(server, req, res);
