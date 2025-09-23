@@ -1,4 +1,4 @@
-import { Role as DtoRole } from 'generated/prisma';
+
 export enum Role {
   ADMIN = 'ADMIN',
   CUSTOMER = 'CUSTOMER',
@@ -7,7 +7,7 @@ export interface Users {
     id: number;
     name: string;
     email: string;
-    role: DtoRole;
+    role: Role;
     createdAt: Date
     updatedAt: Date
 }
