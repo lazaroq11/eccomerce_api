@@ -1,7 +1,7 @@
 import { Controller, UseGuards, Body, Post, Request, Get, Delete, Patch, Param } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { AuthGuard } from '../auth/auth.guard';
-import { Category } from './dtos/category';
+import { CategoryDto } from './dtos/category.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody, ApiParam } from '@nestjs/swagger';
 
 @ApiTags('categories')
@@ -14,8 +14,8 @@ export class CategoryController {
     @Post('create')
     @ApiOperation({ summary: 'Cria novas categorias (Admin)' })
     @ApiResponse({ status: 201, description: 'Categorias criadas com sucesso' })
-    @ApiBody({ type: [Category] })
-    async createCategory(@Request() request, @Body() body: Category[]) {
+    @ApiBody({ type: [CategoryDto] })
+    async createCategory(@Request() request, @Body() body: CategoryDto[]) {
         return this.categoryService.createCategory(body);
     }
 
@@ -40,8 +40,8 @@ export class CategoryController {
     @Patch('update/:id')
     @ApiOperation({ summary: 'Atualiza uma categoria pelo ID (Admin)' })
     @ApiParam({ name: 'id', description: 'ID da categoria', example: 1 })
-    @ApiBody({ type: Category })
-    async updateCategory(@Request() request, @Param('id') id: number, @Body() body: Partial<Category>) {
+    @ApiBody({ type: CategoryDto })
+    async updateCategory(@Request() request, @Param('id') id: number, @Body() body: Partial<CategoryDto>) {
         return this.categoryService.updateCategory(id, body);
     }
 
