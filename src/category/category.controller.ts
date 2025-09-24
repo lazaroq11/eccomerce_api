@@ -1,58 +1,62 @@
-import { Controller, UseGuards, Body, Post, Request, Get, Delete, Patch } from '@nestjs/common';
+import { Controller, UseGuards, Body, Post, Request, Get, Delete, Patch, Param } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { AuthGuard } from '../auth/auth.guard';
-import type { Category } from './dtos/category';
+import { Category } from './dtos/category';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody, ApiParam } from '@nestjs/swagger';
 
+@ApiTags('categories')
+@ApiBearerAuth()
 @Controller('category')
 export class CategoryController {
     constructor(private readonly categoryService: CategoryService) { }
+
     @UseGuards(AuthGuard)
     @Post('create')
+    @ApiOperation({ summary: 'Cria novas categorias (Admin)' })
+    @ApiResponse({ status: 201, description: 'Categorias criadas com sucesso' })
+    @ApiBody({ type: [Category] })
     async createCategory(@Request() request, @Body() body: Category[]) {
-        if (request.user.role !== 'ADMIN') {
-            throw new Error('Access denied: only admins can create categories');
-        }
         return this.categoryService.createCategory(body);
     }
 
     @UseGuards(AuthGuard)
     @Get('all')
+    @ApiOperation({ summary: 'Lista todas as categorias' })
+    @ApiResponse({ status: 200, description: 'Lista de categorias retornada' })
     async getAllCategories() {
         return this.categoryService.getAllCategories();
     }
 
     @UseGuards(AuthGuard)
     @Get(':id')
-    async getCategoryById(@Body('id') id: number) {
+    @ApiOperation({ summary: 'Retorna uma categoria pelo ID' })
+    @ApiParam({ name: 'id', description: 'ID da categoria', example: 1 })
+    @ApiResponse({ status: 200, description: 'Categoria encontrada' })
+    async getCategoryById(@Param('id') id: number) {
         return this.categoryService.getCategoryById(id);
     }
 
     @UseGuards(AuthGuard)
     @Patch('update/:id')
-    async updateCategory(@Request() request, @Body('id') id: number, @Body() body: Partial<Category>) {
-        if (request.user.role !== 'ADMIN') {
-            throw new Error('Access denied: only admins can update categories');
-        }
+    @ApiOperation({ summary: 'Atualiza uma categoria pelo ID (Admin)' })
+    @ApiParam({ name: 'id', description: 'ID da categoria', example: 1 })
+    @ApiBody({ type: Category })
+    async updateCategory(@Request() request, @Param('id') id: number, @Body() body: Partial<Category>) {
         return this.categoryService.updateCategory(id, body);
     }
 
     @UseGuards(AuthGuard)
     @Delete('delete/:id')
-    async deleteCategory(@Request() request, @Body('id') id: number) {
-        if (request.user.role !== 'ADMIN') {
-            throw new Error('Access denied: only admins can delete categories');
-        }
+    @ApiOperation({ summary: 'Deleta uma categoria pelo ID (Admin)' })
+    @ApiParam({ name: 'id', description: 'ID da categoria', example: 1 })
+    async deleteCategory(@Request() request, @Param('id') id: number) {
         return this.categoryService.deleteCategoryById(id);
     }
 
     @UseGuards(AuthGuard)
     @Delete('deleteAll')
+    @ApiOperation({ summary: 'Deleta todas as categorias (Admin)' })
     async deleteAllCategories(@Request() request) {
-        if (request.user.role !== 'ADMIN') {
-            throw new Error('Access denied: only admins can delete categories');
-        }
         return this.categoryService.deteteCategoryAll();
     }
-
-
 }

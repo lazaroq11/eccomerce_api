@@ -1,17 +1,26 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import type { SignInDto, SignUpDto } from './dtos/auth';
+import { SignInDto, SignUpDto } from './dtos/auth';
 import { AuthService } from './auth.service';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-    constructor(private authService: AuthService) { }
-    @Post('signup')
-    async signUp(@Body() body: SignUpDto) {
-        return this.authService.signup(body);
+  constructor(private readonly authService: AuthService) {}
 
-    }
-    
-    @Post('signin')
-    async signIn(@Body() body: SignInDto) {
-        return this.authService.signin(body);
-    }
+  @Post('signup')
+  @ApiOperation({ summary: 'Cria um novo usuário' })
+  @ApiResponse({ status: 201, description: 'Usuário criado com sucesso' })
+  @ApiResponse({ status: 401, description: 'Usuário já existe' })
+  async signUp(@Body() body: SignUpDto) {
+    return this.authService.signup(body);
+  }
+
+  @Post('signin')
+  @ApiOperation({ summary: 'Faz login do usuário' })
+  @ApiResponse({ status: 200, description: 'Login realizado com sucesso' })
+  @ApiResponse({ status: 401, description: 'Credenciais inválidas' })
+  async signIn(@Body() body: SignInDto) {
+    return this.authService.signin(body);
+  }
 }
