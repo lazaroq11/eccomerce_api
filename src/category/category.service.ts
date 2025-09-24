@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { Category } from './dtos/category';
+import { CategoryDto } from './dtos/category.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class CategoryService {
     constructor(private prismaService: PrismaService) { }
 
-    async createCategory(data: Category[]): Promise<Category[]> {
+    async createCategory(data: CategoryDto[]): Promise<CategoryDto[]> {
         if (!Array.isArray(data) || data.length === 0) {
             throw new Error('No category provided');
         }
@@ -27,7 +27,7 @@ export class CategoryService {
             throw new Error(`Product(s) already exists: ${existingNames}`);
         }
 
-        const createdCategory: Category[] = [];
+        const createdCategory: CategoryDto[] = [];
         for (const cat of data) {
             const created = await this.prismaService.category.create({
                 data: {
@@ -46,7 +46,7 @@ export class CategoryService {
         return createdCategory;
     }
 
-    async getAllCategories(): Promise<Category[]> {
+    async getAllCategories(): Promise<CategoryDto[]> {
         const categories = await this.prismaService.category.findMany({
             include: { products: true }
         });
@@ -59,7 +59,7 @@ export class CategoryService {
         }));
     }
 
-    async getCategoryById(id: number): Promise<Category> {
+    async getCategoryById(id: number): Promise<CategoryDto> {
         const category = await this.prismaService.category.findUnique({
             where: { id },
             include: { products: true }
@@ -76,7 +76,7 @@ export class CategoryService {
         };
     }
 
-    async updateCategory(id: number, data: Partial<Category>) {
+    async updateCategory(id: number, data: Partial<CategoryDto>) {
         const category = await this.prismaService.category.findUnique({
             where: { id }
         });
