@@ -1,3 +1,9 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -8,16 +14,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  ADMIN
+  CUSTOMER
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   name      String
   email     String   @unique
   password  String
-  createdAt DateTime @default(now())
   role      Role     @default(CUSTOMER)
-  updatedAt DateTime @default(now()) @updatedAt
-  cart      Cart?
   orders    Order[]
+  cart      Cart?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Category {
@@ -32,73 +43,68 @@ model Product {
   description  String?
   price        Float
   stock        Int
+  category     Category       @relation(fields: [categoryId], references: [id])
   categoryId   Int
+  orderItems   OrderItem[]
+  cartItems    CartItem[]
+  stockHistory StockHistory[]
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @default(now()) @updatedAt
-  cartItems    CartItem[]
-  orderItems   OrderItem[]
-  category     Category       @relation(fields: [categoryId], references: [id])
-  stockHistory StockHistory[]
 }
 
 model Order {
   id        Int         @id @default(autoincrement())
+  user      User        @relation(fields: [userId], references: [id])
   userId    Int
+  items     OrderItem[]
   total     Float
-  status    String      @default("PENDING")
+  status    String      @default("PENDING") // PENDING, PAID, SHIPPED, CANCELED
+  coupon    Coupon?     @relation(fields: [couponId], references: [id])
   couponId  Int?
   createdAt DateTime    @default(now())
-  coupon    Coupon?     @relation(fields: [couponId], references: [id])
-  user      User        @relation(fields: [userId], references: [id])
-  items     OrderItem[]
 }
 
 model OrderItem {
   id        Int     @id @default(autoincrement())
+  order     Order   @relation(fields: [orderId], references: [id])
   orderId   Int
+  product   Product @relation(fields: [productId], references: [id])
   productId Int
   quantity  Int
-  price     Float
-  order     Order   @relation(fields: [orderId], references: [id])
-  product   Product @relation(fields: [productId], references: [id])
+  price     Float // preço no momento do pedido
 }
 
 model Cart {
   id        Int        @id @default(autoincrement())
-  userId    Int        @unique
-  createdAt DateTime   @default(now())
   user      User       @relation(fields: [userId], references: [id])
+  userId    Int        @unique
   items     CartItem[]
+  createdAt DateTime   @default(now())
 }
 
 model CartItem {
   id        Int     @id @default(autoincrement())
+  cart      Cart    @relation(fields: [cartId], references: [id])
   cartId    Int
+  product   Product @relation(fields: [productId], references: [id])
   productId Int
   quantity  Int
-  cart      Cart    @relation(fields: [cartId], references: [id])
-  product   Product @relation(fields: [productId], references: [id])
 }
 
 model Coupon {
   id        Int      @id @default(autoincrement())
   code      String   @unique
-  discount  Float
+  discount  Float // percentual de desconto (ex: 10 = 10%)
+  orders    Order[]
   expiresAt DateTime
   createdAt DateTime @default(now())
-  orders    Order[]
 }
 
 model StockHistory {
   id        Int      @id @default(autoincrement())
-  productId Int
-  quantity  Int
-  type      String
-  createdAt DateTime @default(now())
   product   Product  @relation(fields: [productId], references: [id])
-}
-
-enum Role {
-  ADMIN
-  CUSTOMER
+  productId Int
+  quantity  Int // quantidade adicionada ou removida
+  type      String // "IN" = adição, "OUT" = venda
+  createdAt DateTime @default(now())
 }
