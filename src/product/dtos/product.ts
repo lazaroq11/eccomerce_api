@@ -16,6 +16,9 @@ export class Product {
   @ApiProperty({ description: 'Quantidade em estoque', example: 50 })
   stock: number;
 
+  @ApiProperty({ description: 'Imagem do produto', example:"https://placehold.co/400"})
+  imageUrl: string | null;
+
   @ApiProperty({ description: 'ID da categoria do produto', example: 1 })
   categoryId: number;
 

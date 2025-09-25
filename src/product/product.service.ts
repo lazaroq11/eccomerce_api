@@ -34,6 +34,7 @@ export class ProductService {
                 data: {
                     name: prod.name,
                     price: prod.price,
+                    imageUrl: prod.imageUrl,
                     stock: prod.stock,
                     categoryId: prod.categoryId,
                     description: prod.description,
