@@ -1,9 +1,9 @@
-import { Controller, UseGuards, Get, Post, Delete, Patch, Request, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, UseGuards, Request } from '@nestjs/common';
 import { CartService } from './cart.service';
-import { AuthGuard } from '../auth/auth.guard';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody, ApiParam } from '@nestjs/swagger';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 
-@ApiTags('cart')
+@ApiTags('Cart')
 @ApiBearerAuth()
 @Controller('cart')
 export class CartController {
@@ -11,39 +11,47 @@ export class CartController {
 
     @UseGuards(AuthGuard)
     @Post('add')
-    @ApiOperation({ summary: 'Adiciona um item ao carrinho' })
-    @ApiBody({ schema: { type: 'object', properties: { productId: { type: 'number', example: 1 }, quantity: { type: 'number', example: 2 } } } })
-    @ApiResponse({ status: 201, description: 'Item adicionado ao carrinho' })
-    async addToCart(@Request() request, @Body() body: { productId: number; quantity: number }) {
-        const userId = request.user.id;
-        return this.cartService.addToCart(userId, body.productId, body.quantity);
+    @ApiOperation({ summary: 'Adicionar produto ao carrinho' })
+    @ApiResponse({ status: 201, description: 'Produto adicionado ao carrinho' })
+    async addToCart(
+        @Request() req,
+        @Body() body: { productId: number; quantity: number },
+    ) {
+        return this.cartService.addToCart(req.user.id, body.productId, body.quantity);
     }
 
     @UseGuards(AuthGuard)
     @Get()
-    @ApiOperation({ summary: 'Retorna os itens do carrinho do usuário logado' })
-    @ApiResponse({ status: 200, description: 'Itens do carrinho retornados com sucesso' })
-    async getCart(@Request() request) {
-        const userId = request.user.id;
-        return this.cartService.getCart(userId);
+    @ApiOperation({ summary: 'Obter o carrinho do usuário' })
+    @ApiResponse({ status: 200, description: 'Carrinho com os produtos' })
+    async getCart(@Request() req) {
+        return this.cartService.getCartByUserId(req.user.id);
     }
 
     @UseGuards(AuthGuard)
-    @Delete('item/:productId')
-    @ApiOperation({ summary: 'Remove um item específico do carrinho' })
-    @ApiParam({ name: 'productId', description: 'ID do produto a ser removido', example: 1 })
-    @ApiResponse({ status: 200, description: 'Item removido do carrinho' })
-    async removeItemFromCart(@Request() request, @Param('productId') productId: string) {
-        const userId = request.user.id;
-        return this.cartService.removeItemFromCart(userId, Number(productId));
+    @Delete('remove/:productId')
+    @ApiOperation({ summary: 'Remover produto do carrinho' })
+    @ApiResponse({ status: 200, description: 'Produto removido do carrinho' })
+    async removeItem(@Request() req, @Param('productId') productId: string) {
+        return this.cartService.removeItemFromCart(req.user.id, Number(productId));
     }
 
     @UseGuards(AuthGuard)
-    @Delete('all')
-    @ApiOperation({ summary: 'Remove todos os itens do carrinho do usuário logado' })
+    @Delete('clear')
+    @ApiOperation({ summary: 'Limpar o carrinho' })
     @ApiResponse({ status: 200, description: 'Carrinho limpo com sucesso' })
-    async clearCart(@Request() request) {
-        const userId = request.user.id;
-        return this.cartService.clearCart(userId);
+    async clearCart(@Request() req) {
+        return this.cartService.clearCart(req.user.id);
+    }
+
+    @UseGuards(AuthGuard)
+    @Post('remove-items')
+    @ApiOperation({ summary: 'Remover múltiplos produtos do carrinho' })
+    @ApiResponse({ status: 200, description: 'Itens selecionados removidos do carrinho' })
+    async removeItems(
+        @Request() req,
+        @Body() body: { productIds: number[] },
+    ) {
+        return this.cartService.removeItemsFromCart(req.user.id, body.productIds);
     }
 }

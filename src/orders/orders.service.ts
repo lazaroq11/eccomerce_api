@@ -1,36 +1,30 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateOrderDto, OrderResponseDto, OrderItemDto as OrderItem } from './dtos/orders.dto';
 import { CartService } from 'src/cart/cart.service';
-
+import { CreateOrderDto, OrderResponseDto, OrderItemDto as OrderItem } from './dtos/orders.dto';
 
 @Injectable()
 export class OrdersService {
-  constructor(private prismaService: PrismaService, private cartService: CartService) { }
+  constructor(
+    private prismaService: PrismaService,
+    private cartService: CartService,
+  ) {}
 
-  async createOrder(userId: number, data?: CreateOrderDto): Promise<OrderResponseDto> {
-    let items: OrderItem[];
-    if (!data?.items || data.items.length === 0) {
-      const cart = await this.cartService.getCart(userId);
-      if (!cart?.items?.length) throw new BadRequestException('Cart is empty');
-
-      items = cart.items.map(i => ({
-        productId: i.productId,
-        quantity: i.quantity,
-      }));
-    } else {
-      items = data.items;
+  async createOrder(userId: number, data: CreateOrderDto): Promise<OrderResponseDto> {
+    if (!data.items || data.items.length === 0) {
+      throw new BadRequestException('No items provided');
     }
-    const productIds = items.map(i => i.productId);
+    const productIds = data.items.map(i => i.productId);
     const products = await this.prismaService.product.findMany({
       where: { id: { in: productIds } },
     });
 
-    if (products.length !== items.length) {
+    if (products.length !== data.items.length) {
       throw new NotFoundException('One or more products not found');
     }
+
     let total = 0;
-    const orderItemsData = items.map(item => {
+    const orderItemsData = data.items.map((item: OrderItem) => {
       const product = products.find(p => p.id === item.productId)!;
       total += product.price * item.quantity;
       return {
@@ -39,9 +33,8 @@ export class OrdersService {
         price: product.price,
       };
     });
-
     let couponId: number | undefined = undefined;
-    if (data?.couponCode) {
+    if (data.couponCode) {
       const coupon = await this.prismaService.coupon.findUnique({
         where: { code: data.couponCode },
       });
@@ -51,25 +44,19 @@ export class OrdersService {
       total = total * (1 - coupon.discount / 100);
       couponId = coupon.id;
     }
-    const order = await this.prismaService.$transaction(async prisma => {
-      const newOrder = await prisma.order.create({
-        data: {
-          userId,
-          total,
-          status: 'PENDING',
-          couponId,
-          items: {
-            create: orderItemsData,
-          },
-        },
-        include: { items: true },
-      });
-      if (!data?.items || data.items.length === 0) {
-        await this.cartService.clearCart(userId);
-      }
-
-      return newOrder;
+    const order = await this.prismaService.order.create({
+      data: {
+        userId,
+        total,
+        status: 'PENDING',
+        couponId,
+        items: { create: orderItemsData },
+      },
+      include: { items: true },
     });
+
+    await this.cartService.removeItemsFromCart(userId, productIds);
+
     return {
       id: order.id,
       userId: order.userId,
@@ -87,7 +74,7 @@ export class OrdersService {
   async getOrdersByUser(userId: number): Promise<OrderResponseDto[]> {
     const orders = await this.prismaService.order.findMany({
       where: { userId },
-      include: { items: true }
+      include: { items: true },
     });
 
     return orders.map(order => ({
@@ -97,7 +84,7 @@ export class OrdersService {
       total: order.total,
       status: order.status,
       couponId: order.couponId ?? undefined,
-      createdAt: order.createdAt
+      createdAt: order.createdAt,
     }));
   }
 }

@@ -6,24 +6,27 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagg
 
 @ApiTags('Orders')
 @ApiBearerAuth()
-@Controller('checkout')
+@Controller('orders')
 export class OrdersController {
-    constructor(private readonly ordersService: OrdersService) {}
+    constructor(private readonly ordersService: OrdersService) { }
 
     @UseGuards(AuthGuard)
     @Post('create')
-    @ApiOperation({ summary: 'Create a new order' })
-    @ApiResponse({ status: 201, description: 'Order successfully created', type: OrderResponseDto })
-    @ApiResponse({ status: 400, description: 'Invalid input or coupon expired' })
-    async createOrder(@Request() request, @Body() createOrderDto: CreateOrderDto): Promise<OrderResponseDto> {
-        return this.ordersService.createOrder(request.user.id, createOrderDto);
+    @ApiOperation({ summary: 'Criar um novo pedido a partir dos itens selecionados do carrinho' })
+    @ApiResponse({ status: 201, description: 'Pedido criado com sucesso', type: OrderResponseDto })
+    @ApiResponse({ status: 400, description: 'Dados inválidos ou cupom expirado' })
+    async createOrder(
+        @Request() req,
+        @Body() createOrderDto: CreateOrderDto,
+    ): Promise<OrderResponseDto> {
+        return this.ordersService.createOrder(req.user.id, createOrderDto);
     }
 
     @UseGuards(AuthGuard)
     @Get('my-orders')
-    @ApiOperation({ summary: 'Get orders of logged in user' })
-    @ApiResponse({ status: 200, description: 'List of user orders', type: [OrderResponseDto] })
-    async getMyOrders(@Request() request): Promise<OrderResponseDto[]> {
-        return this.ordersService.getOrdersByUser(request.user.id);
+    @ApiOperation({ summary: 'Obter os pedidos do usuário logado' })
+    @ApiResponse({ status: 200, description: 'Lista de pedidos do usuário', type: [OrderResponseDto] })
+    async getMyOrders(@Request() req): Promise<OrderResponseDto[]> {
+        return this.ordersService.getOrdersByUser(req.user.id);
     }
 }
