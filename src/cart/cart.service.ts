@@ -48,7 +48,7 @@ export class CartService {
         });
 
         if (!cart) {
-            return { message: 'Cart is empty' };
+            return null;
         }
 
         return {
