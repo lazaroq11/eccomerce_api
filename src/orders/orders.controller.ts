@@ -11,7 +11,7 @@ export class OrdersController {
     constructor(private readonly ordersService: OrdersService) { }
 
     @UseGuards(AuthGuard)
-    @Post('create')
+    @Post('checkout')
     @ApiOperation({ summary: 'Criar um novo pedido a partir dos itens selecionados do carrinho' })
     @ApiResponse({ status: 201, description: 'Pedido criado com sucesso', type: OrderResponseDto })
     @ApiResponse({ status: 400, description: 'Dados inválidos ou cupom expirado' })
