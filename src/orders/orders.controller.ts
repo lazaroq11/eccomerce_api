@@ -6,7 +6,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagg
 
 @ApiTags('Orders')
 @ApiBearerAuth()
-@Controller('orders')
+@Controller('checkout')
 export class OrdersController {
     constructor(private readonly ordersService: OrdersService) {}
 
