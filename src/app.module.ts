@@ -18,9 +18,10 @@ import { AuthService } from './auth/auth.service';
 import { OrdersService } from './orders/orders.service';
 import { CouponService } from './coupon/coupon.service';
 import { CartService } from './cart/cart.service';
+import { ReportModule } from './report/report.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UsersModule, ProductModule, CategoryModule, CartModule, CouponModule, OrdersModule],
+  imports: [PrismaModule, AuthModule, UsersModule, ProductModule, CategoryModule, CartModule, CouponModule, OrdersModule, ReportModule],
   controllers: [CategoryController, HealthController, ProductController, OrdersController],
   providers: [PrismaService, CategoryService, ProductService, AuthService, OrdersService, CouponService,CartService],
 })
