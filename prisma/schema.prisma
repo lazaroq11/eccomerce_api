@@ -19,6 +19,12 @@ enum Role {
   CUSTOMER
 }
 
+enum PaymentMethod {
+  pix
+  boleto
+  card
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   name      String
@@ -54,15 +60,16 @@ model Product {
 }
 
 model Order {
-  id        Int         @id @default(autoincrement())
-  user      User        @relation(fields: [userId], references: [id])
-  userId    Int
-  items     OrderItem[]
-  total     Float
-  status    String      @default("PENDING") // PENDING, PAID, SHIPPED, CANCELED
-  coupon    Coupon?     @relation(fields: [couponId], references: [id])
-  couponId  Int?
-  createdAt DateTime    @default(now())
+  id            Int           @id @default(autoincrement())
+  user          User          @relation(fields: [userId], references: [id])
+  userId        Int
+  items         OrderItem[]
+  total         Float
+  status        String        @default("PENDING") // PENDING, PAID, SHIPPED, CANCELED
+  coupon        Coupon?       @relation(fields: [couponId], references: [id])
+  couponId      Int?
+  createdAt     DateTime      @default(now())
+  paymentMethod PaymentMethod @default(pix)
 }
 
 model OrderItem {
@@ -72,7 +79,8 @@ model OrderItem {
   product   Product @relation(fields: [productId], references: [id])
   productId Int
   quantity  Int
-  price     Float // preço no momento do pedido
+  title     String
+  price     Float
 }
 
 model Cart {
