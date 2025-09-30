@@ -19,10 +19,13 @@ import { OrdersService } from './orders/orders.service';
 import { CouponService } from './coupon/coupon.service';
 import { CartService } from './cart/cart.service';
 import { ReportModule } from './report/report.module';
+import { PaymentController } from './payment/payment.controller';
+import { PaymentService } from './payment/payment.service';
+import { StockModule } from './stock/stock.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UsersModule, ProductModule, CategoryModule, CartModule, CouponModule, OrdersModule, ReportModule],
-  controllers: [CategoryController, HealthController, ProductController, OrdersController],
-  providers: [PrismaService, CategoryService, ProductService, AuthService, OrdersService, CouponService,CartService],
+  imports: [PrismaModule, AuthModule, UsersModule, ProductModule, CategoryModule, CartModule, CouponModule, OrdersModule, ReportModule, StockModule],
+  controllers: [CategoryController, HealthController, ProductController, OrdersController, PaymentController],
+  providers: [PrismaService, CategoryService, ProductService, AuthService, OrdersService, CouponService,CartService, PaymentService],
 })
 export class AppModule {}
