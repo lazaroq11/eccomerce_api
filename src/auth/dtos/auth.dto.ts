@@ -17,4 +17,7 @@ export class SignUpDto {
 
   @ApiProperty({ description: 'Senha do usuário', example: '123456' })
   password: string;
+
+  @ApiProperty({ description: 'CPF do usuário', example: '123.456.789-00' })
+  cpf: string;
 }

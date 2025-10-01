@@ -18,6 +18,7 @@ export class UsersService {
         return {
             id: user.id,
             name: user.name,
+            cpf: user.cpf,
             email: user.email,
             role: user.role,
             createdAt: user.createdAt,
@@ -41,6 +42,7 @@ export class UsersService {
             id: user.id,
             name: user.name,
             email: user.email,
+            cpf: user.cpf,
             role: user.role,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,

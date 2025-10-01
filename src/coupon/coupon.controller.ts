@@ -1,4 +1,3 @@
-// coupon.controller.ts
 import { Controller, Get, Param, Body, Post, ParseIntPipe, ForbiddenException, Request, UseGuards } from '@nestjs/common';
 import { CouponService } from './coupon.service';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';

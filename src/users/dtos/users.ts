@@ -16,6 +16,9 @@ export class Users {
   @ApiProperty({ example: 'joao@email.com', description: 'Email do usuário' })
   email: string;
 
+  @ApiProperty({ example: '123.456.789-00', description: 'CPF do usuário' })
+  cpf: string;
+
   @ApiProperty({ enum: Role, description: 'Função do usuário' })
   role: DtoRole;
 

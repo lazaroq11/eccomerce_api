@@ -25,14 +25,37 @@ enum PaymentMethod {
   card
 }
 
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REFUNDED
+  CANCELLED
+}
+
+enum StockMovementType {
+  IN
+  OUT
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   name      String
   email     String   @unique
   password  String
+  cpf       String   @unique 
   role      Role     @default(CUSTOMER)
   orders    Order[]
-  cart      Cart?
+  cart      Cart?    
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
@@ -60,16 +83,19 @@ model Product {
 }
 
 model Order {
-  id            Int           @id @default(autoincrement())
-  user          User          @relation(fields: [userId], references: [id])
-  userId        Int
-  items         OrderItem[]
-  total         Float
-  status        String        @default("PENDING") // PENDING, PAID, SHIPPED, CANCELED
-  coupon        Coupon?       @relation(fields: [couponId], references: [id])
-  couponId      Int?
-  createdAt     DateTime      @default(now())
-  paymentMethod PaymentMethod @default(pix)
+  id             Int           @id @default(autoincrement())
+  user           User          @relation(fields: [userId], references: [id])
+  userId         Int
+  items          OrderItem[]
+  total          Float
+  status         OrderStatus   @default(PENDING)
+  coupon         Coupon?       @relation(fields: [couponId], references: [id])
+  couponId       Int?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @default(now()) @updatedAt
+  paymentMethod  PaymentMethod
+  mpPreferenceId String?
+  payments       Payment[]
 }
 
 model OrderItem {
@@ -110,10 +136,25 @@ model Coupon {
 }
 
 model StockHistory {
-  id        Int      @id @default(autoincrement())
-  product   Product  @relation(fields: [productId], references: [id])
+  id        Int                @id @default(autoincrement())
+  product   Product            @relation(fields: [productId], references: [id])
   productId Int
-  quantity  Int // quantidade adicionada ou removida
-  type      String // "IN" = adição, "OUT" = venda
-  createdAt DateTime @default(now())
+  quantity  Int
+  type      StockMovementType
+  createdAt DateTime           @default(now())
 }
+
+model Payment {
+  id            Int            @id @default(autoincrement())
+  mpPaymentId   String?
+  status        PaymentStatus   @default(PENDING)
+  amount        Float
+  method        PaymentMethod
+  email         String
+  qrCode        String?
+  boletoUrl     String?
+  createdAt     DateTime        @default(now())
+  order         Order           @relation(fields: [orderId], references: [id])
+  orderId       Int
+}
+

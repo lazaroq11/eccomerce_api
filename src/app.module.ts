@@ -22,9 +22,10 @@ import { ReportModule } from './report/report.module';
 import { PaymentController } from './payment/payment.controller';
 import { PaymentService } from './payment/payment.service';
 import { StockModule } from './stock/stock.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UsersModule, ProductModule, CategoryModule, CartModule, CouponModule, OrdersModule, ReportModule, StockModule],
+  imports: [PrismaModule, AuthModule, UsersModule, ProductModule, CategoryModule, CartModule, CouponModule, OrdersModule, ReportModule, StockModule, PaymentModule],
   controllers: [CategoryController, HealthController, ProductController, OrdersController, PaymentController],
   providers: [PrismaService, CategoryService, ProductService, AuthService, OrdersService, CouponService,CartService, PaymentService],
 })

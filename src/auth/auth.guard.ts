@@ -2,7 +2,6 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 
-// Extend Express Request interface to include 'user'
 declare module 'express-serve-static-core' {
     interface Request {
         user?: any;
@@ -23,7 +22,6 @@ export class AuthGuard implements CanActivate {
             const payload = await this.jwtService.verifyAsync(token, {
                 secret: process.env.JWT_SECRET,
             });
-            // Aqui populamos o request.user corretamente
             request['user'] = { id: payload.id, role: payload.role };
             return true;
         } catch (err) {

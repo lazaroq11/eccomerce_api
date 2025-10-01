@@ -37,7 +37,7 @@ export class CategoryService {
             createdCategory.push({
             id: created.id,
             name: created.name,
-            products: [], // inicialmente vazio
+            products: [], 
         });
 
 

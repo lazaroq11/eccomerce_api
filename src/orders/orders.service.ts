@@ -1,13 +1,18 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Inject, forwardRef, Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CartService } from 'src/cart/cart.service';
 import { CreateOrderDto, OrderResponseDto, OrderItemDto as OrderItem } from './dtos/orders.dto';
+import { OrderStatus } from './enums/order_status.enum';
+import { PaymentService } from 'src/payment/payment.service';
+
 
 @Injectable()
 export class OrdersService {
   constructor(
     private prismaService: PrismaService,
     private cartService: CartService,
+    @Inject(forwardRef(() => PaymentService))
+    private paymentService: PaymentService,
   ) { }
 
   async createOrder(userId: number, data: CreateOrderDto): Promise<OrderResponseDto> {
@@ -20,18 +25,18 @@ export class OrdersService {
       where: { id: { in: productIds } },
     });
 
-
     if (products.length !== data.items.length) {
       throw new NotFoundException('One or more products not found');
     }
 
     let total = 0;
-    const orderItemsData = data.items.map((item: OrderItem) => {
+    const orderItemsData = data.items.map((item) => {
       const product = products.find(p => p.id === item.productId)!;
 
       if (product.stock < item.quantity) {
-        throw new BadRequestException("Insufficient stock for product")
+        throw new BadRequestException("Insufficient stock for product");
       }
+
       total += product.price * item.quantity;
       return {
         productId: item.productId,
@@ -52,6 +57,11 @@ export class OrdersService {
       total *= 1 - coupon.discount / 100;
       couponId = coupon.id;
     }
+
+    const discountMultiplier = data.couponCode ? 1 - (await this.prismaService.coupon.findUnique({
+      where: { code: data.couponCode }
+    }))!.discount / 100 : 1;
+
 
     const order = await this.prismaService.$transaction(async tx => {
       const newOrder = await tx.order.create({
@@ -82,9 +92,22 @@ export class OrdersService {
       }
 
       return newOrder;
-    })
+    });
 
     await this.cartService.removeItemsFromCart(userId, productIds);
+    const preferenceItems = order.items.map((i) => ({
+      id: i.productId.toString(),
+      title: i.title,
+      description: `Quantidade: ${i.quantity}`,
+      quantity: i.quantity,
+      unit_price: i.price * discountMultiplier, 
+      currency_id: 'BRL',
+    }));
+    const paymentPreference = await this.paymentService.createPreference({
+      orderId: order.id,
+      items: preferenceItems,
+      payerEmail: (await this.prismaService.user.findUnique({ where: { id: userId } }))!.email,
+    });
 
     return {
       id: order.id,
@@ -102,8 +125,10 @@ export class OrdersService {
       couponId: order.couponId ?? undefined,
       paymentMethod: order.paymentMethod,
       createdAt: order.createdAt,
+      checkoutUrl: paymentPreference.init_point,
     };
   }
+
 
   async cancelOrder(userId: number, orderId: number): Promise<OrderResponseDto> {
     const order = await this.prismaService.order.findUnique({
@@ -115,7 +140,6 @@ export class OrdersService {
     if (order.userId !== userId) throw new BadRequestException('Not your order');
     if (order.status === 'CANCELLED') throw new BadRequestException('Order already cancelled');
     if (order.status === 'SHIPPED') throw new BadRequestException('Order already shipped and cannot be cancelled');
-
     const updatedOrder = await this.prismaService.$transaction(async tx => {
       for (const item of order.items) {
         await tx.product.update({
@@ -156,10 +180,18 @@ export class OrdersService {
     const order = await this.prismaService.order.findUnique({ where: { id: orderId }, include: { items: true } });
     if (!order) throw new NotFoundException('Order not found');
 
-    const validStatuses = ['PENDING', 'PAID', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
-    if (!validStatuses.includes(status)) throw new BadRequestException('Invalid status');
+    const validStatuses: OrderStatus[] = [
+      OrderStatus.PENDING,
+      OrderStatus.PAID,
+      OrderStatus.SHIPPED,
+      OrderStatus.DELIVERED,
+      OrderStatus.CANCELLED,
+    ];
 
-    const updatedOrder = await this.prismaService.order.update({ where: { id: orderId }, data: { status }, include: { items: true } });
+    if (!validStatuses.includes(status as OrderStatus)) throw new BadRequestException('Invalid status');
+
+
+    const updatedOrder = await this.prismaService.order.update({ where: { id: orderId }, data: { status: status as OrderStatus }, include: { items: true } });
     return this.mapOrderToResponse(updatedOrder);
   }
 

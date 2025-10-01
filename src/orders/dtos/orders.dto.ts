@@ -18,7 +18,7 @@ export class OrderItemDto {
   orderId: number;
 }
 
-export class CreateOrderItemDto extends OrderItemDto {}
+export class CreateOrderItemDto extends OrderItemDto { }
 
 export class CreateOrderDto {
   @ApiProperty({ type: [CreateOrderItemDto], description: "Lista de itens do pedido" })
@@ -37,7 +37,11 @@ export class CreateOrderDto {
   buyerCpf: string;
 
   @ApiProperty({ description: "Método de pagamento", example: "pix", enum: ["pix", "boleto", "card"] })
-   paymentMethod: PaymentMethod;
+  paymentMethod: PaymentMethod;
+
+  checkoutUrl?: string;
+
+  orderId?: number;
 }
 
 export class UpdateOrderDto {
@@ -76,6 +80,11 @@ export class OrderResponseDto {
   @ApiProperty({ description: "Método de pagamento utilizado", example: "pix", enum: ["pix", "boleto", "card"] })
   paymentMethod: PaymentMethod;
 
+  @ApiProperty({ description: "URL de checkout gerada", example: "https://www.mercadopago.com.br/checkout/v1/redirect?preference-id=123456" })
+  checkoutUrl?: string;
+
   @ApiProperty({ description: "Data de criação do pedido", example: "2025-09-23T16:20:00Z" })
   createdAt: Date;
+
+
 }
